@@ -1,0 +1,176 @@
+﻿@{
+    ViewBag.Title = "Student List";
+    ViewBag.ApiBaseUrl = "https://localhost:7238/api/";
+}
+
+<h3>Öğrenci Listesi</h3>
+
+<div class="row">
+    <div class="col-md-8">
+        <table class="table" id="studentsTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h4 class="h3 mb-4 text-gray-800">Öğrenci Ekle - Düzenle</h4>
+        <div class="mb-2">
+            <label>Öğrenci Adı</label>
+            <input type="text" class="form-control" id="txtName" />
+            <label>Öğrenci Email</label>
+            <input type="text" class="form-control" id="txtEmail" />
+            <label>Öğrenci Telefon</label>
+            <input type="text" class="form-control" id="txtPhone" />
+            <label>Öğrenci Geçici Parola</label>
+            <input type="password" class="form-control" id="txtPass" />
+        </div>
+
+        <div class="mb-2">
+            <input type="hidden" id="txtId" />
+            <a id="btnSave" class="btn btn-primary" title="Kaydet">Ekle<i@* class="fas fa-save" *@></i></a>
+            <a id="btnEdit" class="btn btn-warning" title="Düzenle">Düzenle<i@* class="fas fa-save" *@></i></a>
+
+        </div>
+
+        <div class="alert" id="divResult"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script>
+        var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
+        var studentId = null;
+
+        $(document).ready(function () {
+            $.ajax({
+                url: ApiBaseUrl + "Student",
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    var tbody = $('#studentsTable tbody');
+                    $.each(data, function (index, student) {
+                        var row = '<tr>' +
+                            '<td>' + student.studentId + '</td>' +
+                            '<td>' + student.fullName + '</td>' +
+                            '<td>' + student.email + '</td>' +
+                            '<td>' + student.phone + '</td>' +
+                            '<td><button class="btnDelete" data-id="' + student.studentId + '" style="background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: background-color 0.3s ease;">Delete</button></td>' +
+                            '<td><button class="btnEdit" data-id="' + student.studentId + '" style="background-color: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: background-color 0.3s ease;">Edit</button></td>' +
+                            '</tr>';
+
+                        tbody.append(row);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error: ' + error);
+                }
+            });
+
+            $('#btnSave').click(function () {
+                var studentDto = {
+                    FullName: $('#txtName').val(),
+                    Email: $('#txtEmail').val(),
+                    Password: $('#txtPass').val(),
+                    Phone: $('#txtPhone').val()
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: ApiBaseUrl + "Student",
+                    data: JSON.stringify(studentDto),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        alert('Öğrenci Eklendi!');
+                        $('#txtName').val('');
+                        $('#txtEmail').val('');
+                        $('#txtPass').val('');
+                        $('#txtPhone').val('');
+                    }
+                });
+            });
+
+            $(document).on('click', '.btnDelete', function () {
+                var studentId = $(this).data('id');
+                var button = $(this);
+
+                if (confirm('Silmek istediğinize emin misiniz?')) {
+                    $.ajax({
+                        type: 'DELETE',
+                        url: ApiBaseUrl + "Student/" + studentId,
+                        success: function (response) {
+                            alert('Öğrenci başarıyla silindi!');
+                            button.closest('tr').remove();
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('Status: ' + status);
+                            console.log('Error: ' + error);
+                            console.log('Response: ' + xhr.responseText);
+                            alert('Error: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+
+            $(document).on('click', '.btnEdit', function () {
+                studentId = $(this).data('id');
+
+                $.ajax({
+                    type: 'GET',
+                    url: ApiBaseUrl + 'Student/' + studentId,
+                    dataType: 'json',
+                    success: function (student) {
+                        $('#txtName').val(student.fullName);
+                        $('#txtEmail').val(student.email);
+                        $('#txtPhone').val(student.phone);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ' + error);
+                        alert('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            $('#btnUpdate').on('click', function () {
+                var updatedStudent = {
+                    StudentId: studentId,
+                    FullName: $('#txtName').val(),
+                    Email: $('#txtEmail').val(),
+                    Phone: $('#txtPhone').val()
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: ApiBaseUrl + 'Student',
+                    data: JSON.stringify(updatedStudent),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        alert('Öğrenci başarıyla güncellendi!');
+                        $('#txtName').val('');
+                        $('#txtEmail').val('');
+                        $('#txtPhone').val('');
+                        studentId = null;
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ' + error);
+                        alert('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+}
+

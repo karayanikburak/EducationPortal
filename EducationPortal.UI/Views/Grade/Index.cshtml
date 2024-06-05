@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "Grade List";
+    ViewBag.ApiBaseUrl = "https://localhost:7238/api/";
+}
+
+<h3>Not Listesi</h3>
+
+<table id="gradesTable" class="table">
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Course Id</th>
+            <th>Exam 1</th>
+            <th>Exam 2 </th>
+            <th>Exam 3</th>
+            <th>Average</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script>
+        var ApiBaseUrl = "@ViewBag.ApiBaseUrl"
+
+        $(document).ready(function () {
+            $.ajax({
+                url: ApiBaseUrl + "Grade",
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data)
+                    var tbody = $('#gradesTable tbody');
+                    $.each(data, function (index, grade) {
+                        var row = '<tr>' +
+                            '<td>' + grade.studentId + '</td>' +
+                            '<td>' + grade.courseId + '</td>' +
+                            '<td>' + grade.exam1 + '</td>' +
+                            '<td>' + grade.exam2 + '</td>' +
+                            '<td>' + grade.exam3 + '</td>' +
+                            '<td>' + grade.average + '</td>' +
+                            '<td>' + grade.status + '</td>' +
+                            '</tr>';
+                        tbody.append(row);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error: ' + error);
+                }
+            });
+        });
+    </script>
+}

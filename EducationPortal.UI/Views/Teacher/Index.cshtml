@@ -1,0 +1,55 @@
+﻿@{
+    ViewBag.Title = "Teacher List";
+    ViewBag.ApiBaseUrl = "https://localhost:7238/api/";
+}
+
+<h3>Öğretmen Listesi</h3>
+
+<table id="teachersTable" class="table">
+    <thead>
+        <tr>
+            <th>Teacher ID</th>
+            <th>Course Id</th>
+            <th>FullName</th>
+            <th>Branch</th>
+            <th>Email</th>
+            <th>Phone</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script>
+        var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        $(document).ready(function () {
+            $.ajax({
+                url: ApiBaseUrl + "Teacher",
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data)
+                    var tbody = $('#teachersTable tbody');
+                    $.each(data, function (index, teacher) {
+                        var row = '<tr>' +
+                            '<td>' + teacher.teacherId + '</td>' +
+                            '<td>' + teacher.courseId + '</td>' +
+                            '<td>' + teacher.fullName + '</td>' +
+                            '<td>' + teacher.branch + '</td>' +
+                            '<td>' + teacher.email + '</td>' +
+                            '<td>' + teacher.phone + '</td>' +
+
+                            '</tr>';
+                        tbody.append(row);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error: ' + error);
+                }
+            });
+        });
+    </script>
+}

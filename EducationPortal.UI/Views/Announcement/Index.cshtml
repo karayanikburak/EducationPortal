@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "Announce List";
+    ViewBag.ApiBaseUrl = "https://localhost:7238/api/";
+}
+
+<h3>Duyuru Listesi</h3>
+
+<div class="row">
+    <div class="col-md-8">
+        <table id="announceTable" class="table">
+            <thead>
+                <tr>
+                    <th>Announcement ID</th>
+                    <th>Title</th>
+                    <th>Content</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h4 class="h3 mb-4 text-gray-800">Duyuru Ekle - Düzenle</h4>
+        <div class="mb-2">
+            <label>Başlık</label>
+            <input type="text" class="form-control" id="txtTitle" />
+            <label>İçerik</label>
+            <textarea class="form-control" id="txtContent" rows="3"></textarea>
+        </div>
+
+        <div class="mb-2">
+            <input type="hidden" id="txtId" />
+            <a id="btnSave" class="btn btn-primary" title="Kaydet">Ekle <i class="fas fa-save"></i></a>
+            <a id="btnEdit" class="btn btn-warning" title="Düzenle">Düzenle <i class="fas fa-save"></i></a>
+        </div>
+    </div>
+</div>
+
+</>
+
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script>
+        var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        $(document).ready(function () {
+            loadAnnouncements();
+
+            $('#btnSave').click(function () {
+                var announcementDto = {
+                    Title: $('#txtTitle').val(),
+                    Content: $('#txtContent').val()
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: ApiBaseUrl + "Announcement",
+                    data: JSON.stringify(announcementDto),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        alert('Duyuru Eklendi!');
+                        $('#txtTitle').val('');
+                        $('#txtContent').val('');
+                        loadAnnouncements(); 
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ' + error);
+                        alert('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            $(document).on('click', '.btnEdit', function () {
+                var announcementId = $(this).data('id');
+                $.ajax({
+                    url: ApiBaseUrl + "Announcement/" + announcementId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (announcement) {
+                        $('#txtId').val(announcement.announcementId);
+                        $('#txtTitle').val(announcement.title);
+                        $('#txtContent').val(announcement.content);
+
+                        $('#btnSave').hide();
+                        $('#btnEdit').show();
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ' + error);
+                        alert('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            $('#btnEdit').click(function () {
+                var updatedAnnouncement = {
+                    AnnouncementId: $('#txtId').val(),
+                    Title: $('#txtTitle').val(),
+                    Content: $('#txtContent').val()
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: ApiBaseUrl + 'Announcement',
+                    data: JSON.stringify(updatedAnnouncement),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        alert('Duyuru başarıyla güncellendi!');
+                        $('#txtId').val('');
+                        $('#txtTitle').val('');
+                        $('#txtContent').val('');
+                        $('#btnSave').show();
+                        $('#btnEdit').hide();
+                        loadAnnouncements(); 
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ' + error);
+                        alert('Error: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            function loadAnnouncements() {
+                $.ajax({
+                    url: ApiBaseUrl + "Announcement",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        var tbody = $('#announceTable tbody');
+                        tbody.empty(); 
+
+                        $.each(data, function (index, announcement) {
+                            var row = '<tr>' +
+                                '<td>' + announcement.announcementId + '</td>' +
+                                '<td>' + announcement.title + '</td>' +
+                                '<td>' + announcement.content + '</td>' +
+                                '<td><button class="btnDelete btn btn-danger" data-id="' + announcement.announcementId + '">Sil</button></td>' +
+                                '<td><button class="btnEdit btn btn-warning" data-id="' + announcement.announcementId + '">Düzenle</button></td>' +
+                                '</tr>';
+
+                            tbody.append(row);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error: ' + error);
+                    }
+                });
+            }
+
+            $(document).on('click', '.btnDelete', function () {
+                var announcementId = $(this).data('id');
+                var button = $(this); 
+
+                if (confirm('Silmek istediğinize emin misiniz?')) {
+                    $.ajax({
+                        type: 'DELETE',
+                        url: ApiBaseUrl + "Announcement/" + announcementId,
+                        success: function (response) {
+                            alert('Duyuru başarıyla silindi!');
+                            button.closest('tr').remove();
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('Status: ' + status);
+                            console.log('Error: ' + error);
+                            console.log('Response: ' + xhr.responseText);
+                            alert('Error: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

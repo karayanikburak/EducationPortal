@@ -1,0 +1,46 @@
+﻿@{
+    ViewBag.Title = "Course List";
+    ViewBag.ApiBaseUrl = "https://localhost:7238/api/";
+}
+
+<h3>Ders Listesi</h3>
+
+<table id="courseTable" class="table">
+    <thead>
+        <tr>
+            <th>Course ID</th>
+            <th>Course Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script>
+        var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        $(document).ready(function () {
+            $.ajax({
+                url: ApiBaseUrl + "Course",
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data)
+                    var tbody = $('#courseTable tbody');
+                    $.each(data, function (index, course) {
+                        var row = '<tr>' +
+                            '<td>' + course.courseId + '</td>' +
+                            '<td>' + course.courseName + '</td>' +
+                            '</tr>';
+                        tbody.append(row);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error: ' + error);
+                }
+            });
+        });
+    </script>
+}
